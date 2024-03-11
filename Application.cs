@@ -10,12 +10,6 @@ using System.Threading.Tasks;
 namespace GAPlatform
 {
 
-
-    //TODO - see why pmx is causing duplicates
-    //remember to remove test code
-
-
-
     public class Rand
     {
         public static Random rnd = new Random();
@@ -57,13 +51,6 @@ namespace GAPlatform
 
                     //perform the crossover operation on the parents
                     List<Tour> children = GACrossover.Crossover(selected);
-                    foreach (Tour t in children)
-                    {
-                        if (t.sites.Distinct().Count() != 52)
-                        {
-                            Console.WriteLine("Duplicate FOUND!!!");
-                        }
-                    }
 
                     //add the children to the list
                     for (int j = 0; j < children.Count; j++)
@@ -72,11 +59,6 @@ namespace GAPlatform
                         if (Rand.rnd.NextDouble() < Operators.mutationRate)
                         {
                             children[j] = GAMutation.Mutation(children[j]);
-                        }
-
-                        if (children[j].sites.Distinct().Count() != 52)
-                        {
-                            Console.WriteLine("Duplicate FOUND!!!");
                         }
 
 
@@ -155,7 +137,7 @@ namespace GAPlatform
                     generation[j].fitness += Distance(ProblemData.Sitelist[generation[j].sites[i]], ProblemData.Sitelist[generation[j].sites[i + 1]]);
                 }
 
-                //add the distance between the last and first sites, going bacl t the depot
+                //add the distance between the last and first sites, going back to the depot
                 generation[j].fitness += Distance(ProblemData.Sitelist[generation[j].sites.Last()], ProblemData.Sitelist[generation[j].sites.First()]);
 
                 // if fitness is better than the best fit then update the best fit - for both the current generation and overall
@@ -900,13 +882,7 @@ namespace GAPlatform
                         //if the index is in the swapped region then add it into the child dirtectly
                         Children[j].sites.Add(Sublists[Math.Abs(j - 1)][i - startIndex]);
                     }
-
-                 
-                    if (Children[j].sites.Distinct().Count() != Children[j].sites.Count())
-                    {
-                        Console.WriteLine("Duplicate FOUND!!!");
-                    }
-                    
+              
                 }
             }
             return Children;
