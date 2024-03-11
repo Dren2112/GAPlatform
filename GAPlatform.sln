@@ -5,7 +5,7 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GAPlatform", "GAPlatform.csproj", "{7B2CE2DA-C4D0-44BA-A883-A90ECABC71E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GAUnitTests", "..\GAUnitTests\GAUnitTests.csproj", "{48E6E7A6-6831-4E95-AB47-9BA66A1F03AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GAUnitTests", "GAUnitTests\GAUnitTests.csproj", "{48E6E7A6-6831-4E95-AB47-9BA66A1F03AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
