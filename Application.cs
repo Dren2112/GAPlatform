@@ -399,17 +399,29 @@ namespace GAPlatform
             //initialise parents variable
             List<Tour> parents = new List<Tour>();
 
+            //initialise list of used tours
+            List<int> used = new List<int>();
+
+            //initialise index variable
+            int index;
+
             //while less than two parents have been selected
             while (parents.Count < 2)
             {
-                //choose a random tour to start with
-                Tour winner = generation[Rand.rnd.Next(0, generation.Count)];
+                //choose a random unused tour to start with
+                index = Rand.rnd.Next(0, generation.Count);
+                while (used.Contains(index)) { index = Rand.rnd.Next(0, generation.Count);}
+                Tour winner = generation[index];
+                used.Add(index);
 
                 //repeat three times
                 for (int i = 0; i < 3; i++)
                 {
                     //if a randomly selected tour is better than the current winner, replace the current winner
-                    int index = Rand.rnd.Next(0, generation.Count);
+                    index = Rand.rnd.Next(0, generation.Count);
+                    while (used.Contains(index)) { index = Rand.rnd.Next(0, generation.Count); }
+                    used.Add(index);
+
                     if (generation[index].fitness > winner.fitness)
                     {
                         winner = generation[index];
@@ -418,6 +430,7 @@ namespace GAPlatform
 
                 //add the final winner to the parent list
                 parents.Add(winner);
+                used = new List<int> { used.First() };
             }
 
             return parents;
