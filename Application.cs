@@ -577,7 +577,8 @@ namespace GAPlatform
         public List<Tour> OrderBasedCrossover(List<Tour> Parents)
         {
 
-            List<Tour> Children = new List<Tour>(Parents);
+            List<Tour> Children = new List<Tour> {new Tour { sites = new List<int>(Parents[0].sites) }, new Tour { sites = new List<int>(Parents[1].sites) } };
+
 
             //for each of the two children
             for (int i = 0; i < 2; i++)
@@ -586,7 +587,7 @@ namespace GAPlatform
                 List<int> orderedDigits = new List<int>();
 
                 //randomly determine the amount of digits to be swapped
-                int amountSwapped = Rand.rnd.Next(2, ProblemData.Sitelist.Count);
+                int amountSwapped = Rand.rnd.Next(2, Parents[0].sites.Count());
 
                 //for each swapped digit
                 for (int j = 0; j < amountSwapped; j++)
@@ -595,7 +596,7 @@ namespace GAPlatform
                     int digit;
                     do
                     {
-                        digit = Rand.rnd.Next(0, ProblemData.Sitelist.Count);
+                        digit = Rand.rnd.Next(0, Parents[0].sites.Count());
                     } while (swapDigits.Contains(digit));
 
                     swapDigits.Add(digit);
@@ -608,8 +609,8 @@ namespace GAPlatform
                     if (swapDigits.Contains(site)) orderedDigits.Add(site);
                 }
 
-                //for every destination in a tour - uless the amount of digits still to be swapped is 0
-                for (int j = 0; j < ProblemData.Sitelist.Count && orderedDigits.Count > 0; j++)
+                //for every destination in a tour - unless the amount of digits still to be swapped is 0
+                for (int j = 0; j < Parents[0].sites.Count() && orderedDigits.Count > 0; j++)
                 {
                     //if the current digit is one to be swapped
                     if (swapDigits.Contains(Children[i].sites[j]))
@@ -633,8 +634,8 @@ namespace GAPlatform
         public List<Tour> OrderedCrossover(List<Tour> Parents)
         {
             //randomly determine start and end indexes of swapped portion
-            int startIndex = Rand.rnd.Next(0, ProblemData.Sitelist.Count / 2);
-            int endIndex = Rand.rnd.Next(startIndex + 1, ProblemData.Sitelist.Count);
+            int startIndex = Rand.rnd.Next(0, Parents[0].sites.Count() / 2);
+            int endIndex = Rand.rnd.Next(startIndex + 1, Parents[0].sites.Count());
 
             List<Tour> Children = new List<Tour>();
 
@@ -668,7 +669,7 @@ namespace GAPlatform
                 }
 
                 //for each destination in a tour
-                for (int j = 0; j < ProblemData.Sitelist.Count; j++)
+                for (int j = 0; j < Parents[0].sites.Count(); j++)
                 {
                     //if the current index is outside the swapped region
                     if (!(j >= startIndex && j <= endIndex))
@@ -697,11 +698,11 @@ namespace GAPlatform
             GAInitialisation I = new GAInitialisation();
 
             //initilise list of children
-            List<Tour> Children = new List<Tour>(Parents);
+            List<Tour> Children = new List<Tour> { new Tour { sites = new List<int>(Parents[0].sites) }, new Tour { sites = new List<int>(Parents[1].sites) } };
 
             //randomly determine start and end indexes of swapped portion
-            int startIndex = Rand.rnd.Next(0, ProblemData.Sitelist.Count / 2);
-            int endIndex = Rand.rnd.Next(startIndex + 1, ProblemData.Sitelist.Count);
+            int startIndex = Rand.rnd.Next(0, Parents[0].sites.Count() / 2);
+            int endIndex = Rand.rnd.Next(startIndex + 1, Parents[0].sites.Count());
 
             //extract swapped portions
             List<int> Sublist1 = Parents[0].sites.GetRange(startIndex, endIndex - startIndex);
@@ -765,7 +766,7 @@ namespace GAPlatform
                 {
                     sites = new List<int>()
                 };
-                foreach (Site x in ProblemData.Sitelist)
+                foreach (int x in Parents[0].sites)
                 {
                     t.sites.Add(-1);
                 }
@@ -773,9 +774,9 @@ namespace GAPlatform
             }
 
 
-            //identify primary and secondary parents
-            int startparent = Rand.rnd.Next(0, Parents.Count);
-            int otherparent = Math.Abs(startparent - 1);
+            //initialise primary and secondary parents
+            int startparent = 0;
+            int otherparent = 1;
 
             //for each child
             for (int i = 0; i < Children.Count; i++)
@@ -810,7 +811,7 @@ namespace GAPlatform
             return Children;
         }
 
-        //TODO - Re comment
+
         /// <summary>
         /// perform partially mapped crossover on the selected parent tours
         /// </summary>
@@ -825,8 +826,8 @@ namespace GAPlatform
             Children.Add(new Tour());
 
             //randomly determine the positions of the swapped sections in the tour. The start position will be in the first half to help ensure an adequate length
-            int startIndex = Rand.rnd.Next(0, ProblemData.Sitelist.Count / 2);
-            int endIndex = Rand.rnd.Next(startIndex + 1, ProblemData.Sitelist.Count);
+            int startIndex = Rand.rnd.Next(0, Parents[0].sites.Count() / 2);
+            int endIndex = Rand.rnd.Next(startIndex + 1, Parents[0].sites.Count());
 
             List<List<int>> Sublists = new List<List<int>>
             {
@@ -870,7 +871,7 @@ namespace GAPlatform
             for (int j = 0; j < 2; j++)
             {
                 //for each city in a parent
-                for (int i = 0; i < ProblemData.Sitelist.Count; i++)
+                for (int i = 0; i < Parents[0].sites.Count(); i++)
                 {
                     //if the current index is outside the swapped region
                     if (!(i >= startIndex && i < endIndex))
@@ -918,21 +919,21 @@ namespace GAPlatform
                 };
 
                 //initilise all sites to -1, so it's clear which have not been replaced later
-                foreach (Site x in ProblemData.Sitelist)
+                foreach (int x in Parents[0].sites)
                 {
                     t.sites.Add(-1);
                 }
                 Children.Add(t);
             }
 
-            //randomly dtermone the number of positions to be preserved
-            int PositionNum = Rand.rnd.Next(0, ProblemData.Sitelist.Count);
+            //randomly determine the number of positions to be preserved
+            int PositionNum = Rand.rnd.Next(0, Parents[0].sites.Count());
 
             //create a list of randomly selected positions
             List<int> Positions = new List<int>();
             while (Positions.Count != PositionNum)
             {
-                int position = Rand.rnd.Next(0, ProblemData.Sitelist.Count);
+                int position = Rand.rnd.Next(0, Parents[0].sites.Count());
                 if (!Positions.Contains(position)) Positions.Add(position);
             }
 
@@ -946,7 +947,7 @@ namespace GAPlatform
                 }
 
                 //for each site in the child tour
-                for (int j = 0; j < ProblemData.Sitelist.Count; j++)
+                for (int j = 0; j < Parents[0].sites.Count(); j++)
                 {
                     //if the site has already been replaced, move on to the next
                     if (Children[i].sites[j] != -1) continue;
@@ -1084,8 +1085,8 @@ namespace GAPlatform
             //for each site in teh tour
             for (int i = 0; i < tour.sites.Count; i++)
             {
-                //randomly determined based on mutation operator
-                if (Rand.rnd.NextDouble() < Operators.mutationRate)
+                //one in four chance for each city to be swapped
+                if (Rand.rnd.NextDouble() < 0.25)
                 {
                     //randomly determine the indexes of the site to be swapped
                     int swap = Rand.rnd.Next(0, tour.sites.Count - 1);
