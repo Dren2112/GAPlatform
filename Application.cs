@@ -6,26 +6,53 @@ using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Drawing.Text;
 
 namespace GAPlatform
 {
 
-    public class Rand
+    internal static class Rand
     {
-        public static Random rnd = new Random();
+        [ThreadStatic]
+        private static Random _local;
+        private static readonly Random Global = new Random();
+
+        private static Random Instance
+        {
+            get
+            {
+                if(_local == null)
+                {
+                    int seed;
+                    lock (Global)
+                    {
+                        seed = Global.Next();
+                    }
+
+                    _local = new Random(seed);
+                }
+                return _local;
+            }
+        }
+
+        public static int Next(int min, int max) => Instance.Next(min, max);
+        public static double NextDouble() => Instance.NextDouble();
     }
 
     public class GAApplication
     {
+
         /// <summary>
         /// main method for the genetic algorithm
         /// </summary>
-        public void GeneticAlgorithm(GAForm form)
+        public double GeneticAlgorithm(GAForm form)
         {
             GAInitialisation GAInitialisation = new GAInitialisation();
             GASelection GASelection = new GASelection();
             GACrossover GACrossover = new GACrossover();
             GAMutation GAMutation = new GAMutation();
+            ProblemData problemData = new ProblemData();
 
             //initialise the first generation of solutions
             List<Tour> generation = GAInitialisation.Initialisation();
@@ -38,10 +65,10 @@ namespace GAPlatform
                 List<Tour> nextGen = new List<Tour>();
 
                 //assign a fitness value to each tour
-                FitnessCheck(generation);
+                FitnessCheck(generation, problemData);
 
                 //output the best generation and best overall every 10 runs
-                if (i%10  == 0) { form.OutputBests(i); }
+                //if (i%10  == 0) { form.OutputBests(i); }
 
                 //until the next generation has the desired number of new tours
                 while (nextGen.Count != Operators.crossover)
@@ -56,7 +83,7 @@ namespace GAPlatform
                     for (int j = 0; j < children.Count; j++)
                     {
                         //mutate the child according to the mutation rate
-                        if (Rand.rnd.NextDouble() < Operators.mutationRate)
+                        if (Rand.NextDouble() < Operators.mutationRate)
                         {
                             children[j] = GAMutation.Mutation(children[j]);
                         }
@@ -98,6 +125,8 @@ namespace GAPlatform
                 }
             }
 
+            return problemData.bestFit.fitness;
+
         }
 
 
@@ -128,7 +157,7 @@ namespace GAPlatform
         /// determine the fitness of each tour in the generation
         /// </summary>
         /// <param name="generation">the generation of tours to be analysed</param>
-        public void FitnessCheck(List<Tour> generation)
+        public void FitnessCheck(List<Tour> generation, ProblemData problemData)
         {
             if (generation == null || generation.Count == 0) return;
 
@@ -139,30 +168,32 @@ namespace GAPlatform
                 //for each site in the tour find and add the total distance travelled between sites
                 for (int i = 0; i < generation[j].sites.Count - 1; i++)
                 {
-                    generation[j].fitness += Distance(ProblemData.Sitelist[generation[j].sites[i]], ProblemData.Sitelist[generation[j].sites[i + 1]]);
+                    generation[j].fitness += Distance(Operators.Sitelist[generation[j].sites[i]], Operators.Sitelist[generation[j].sites[i + 1]]);
                 }
 
                 //add the distance between the last and first sites, going back to the depot
-                generation[j].fitness += Distance(ProblemData.Sitelist[generation[j].sites.Last()], ProblemData.Sitelist[generation[j].sites.First()]);
+                generation[j].fitness += Distance(Operators.Sitelist[generation[j].sites.Last()], Operators.Sitelist[generation[j].sites.First()]);
 
-                // if fitness is better than the best fit then update the best fit - for both the current generation and overall
-                if (generation[j].fitness < ProblemData.genFit.fitness || ProblemData.genFit.fitness == 0)
+                if (problemData != null)
                 {
-                    ProblemData.genFit = new Tour
+                    // if fitness is better than the best fit then update the best fit - for both the current generation and overall
+                    if (generation[j].fitness < problemData.genFit.fitness || problemData.genFit.fitness == 0)
                     {
-                        fitness = generation[j].fitness,
-                        sites = generation[j].sites
-                    };
-                }
-                if (generation[j].fitness < ProblemData.bestFit.fitness || ProblemData.bestFit.fitness == 0) 
-                {
-                    ProblemData.bestFit = new Tour
+                        problemData.genFit = new Tour
+                        {
+                            fitness = generation[j].fitness,
+                            sites = generation[j].sites
+                        };
+                    }
+                    if (generation[j].fitness < problemData.bestFit.fitness || problemData.bestFit.fitness == 0)
                     {
-                        fitness = generation[j].fitness,
-                        sites = generation[j].sites
-                    };
+                        problemData.bestFit = new Tour
+                        {
+                            fitness = generation[j].fitness,
+                            sites = generation[j].sites
+                        };
+                    }
                 }
-
 
                 //since a smaller distance is better, invert the distance for later evaluation
                 generation[j].fitness = 1/ generation[j].fitness;
@@ -234,7 +265,7 @@ namespace GAPlatform
             //for each desired tour in the generation
             for (int i = 0; i < GenerationSize; i++)
             {
-                cityNumber = ProblemData.Sitelist.Count;
+                cityNumber = Operators.Sitelist.Count;
                 Tour tour = new Tour
                 {
                     sites = new List<int>()
@@ -251,7 +282,7 @@ namespace GAPlatform
                 {
                     //decrement the number of unswapped cities
                     cityNumber--;
-                    int k = Rand.rnd.Next(cityNumber + 1);
+                    int k = Rand.Next(0,cityNumber + 1);
 
                     //swap the last unswapped city with a randomly picked city
                     (tour.sites[cityNumber], tour.sites[k]) = (tour.sites[k], tour.sites[cityNumber]);
@@ -271,14 +302,11 @@ namespace GAPlatform
         /// <returns>the initialised generation</returns>
         public List<Tour> SortedInitialisation()
         {
-            //initialise local variables
-            int cityNumber;
-
             //create twice as many tours as required
             List<Tour> generation = RandomInitialisation(Operators.genSize * 2);
 
             //evaluate the fitness of the generation
-            GA.FitnessCheck(generation);
+            GA.FitnessCheck(generation, null);
 
             //remove the least fit member of the generation until only the desired number remains
             while (generation.Count > Operators.genSize)
@@ -304,22 +332,22 @@ namespace GAPlatform
             {
                 //populate a tour with a randomly selected first site
                 Tour t = new Tour();
-                t.sites.Add(Rand.rnd.Next(ProblemData.Sitelist.Count));
+                t.sites.Add(Rand.Next(0,Operators.Sitelist.Count));
 
                 //while the required number of sites has not been reached
-                while (t.sites.Count < ProblemData.Sitelist.Count)
+                while (t.sites.Count < Operators.Sitelist.Count)
                 {
                     double min = double.MaxValue;
                     int minSite = -1;
 
                     //find the site with the smallest distance to the last site in the tour that is not already in the tour
-                    for (int j = 0; j < ProblemData.Sitelist.Count; j++)
+                    for (int j = 0; j < Operators.Sitelist.Count; j++)
                     {
                         if (t.sites.Contains(j)) continue;
 
-                        if (GA.Distance(ProblemData.Sitelist[t.sites.Last()], ProblemData.Sitelist[j]) < min)
+                        if (GA.Distance(Operators.Sitelist[t.sites.Last()], Operators.Sitelist[j]) < min)
                         {
-                            min = GA.Distance(ProblemData.Sitelist[t.sites.Last()], ProblemData.Sitelist[j]);
+                            min = GA.Distance(Operators.Sitelist[t.sites.Last()], Operators.Sitelist[j]);
                             minSite = j;
                         }
                     }
@@ -350,7 +378,7 @@ namespace GAPlatform
         public List<Tour> Selection(List<Tour> generation)
         {
             //randomly choose from one of the selected methods
-            string method = Operators.SelectionMethods[Rand.rnd.Next(0, Operators.SelectionMethods.Count)];
+            string method = Operators.SelectionMethods[Rand.Next(0, Operators.SelectionMethods.Count)];
 
             //choose the correct method of selection using the user imput
             switch (method)
@@ -389,8 +417,8 @@ namespace GAPlatform
             while (parents.Count < 2)
             {
                 //choose a random unused tour to start with
-                index = Rand.rnd.Next(0, generation.Count);
-                while (used.Contains(index)) { index = Rand.rnd.Next(0, generation.Count);}
+                index = Rand.Next(0, generation.Count);
+                while (used.Contains(index)) { index = Rand.Next(0, generation.Count);}
                 Tour winner = generation[index];
                 used.Add(index);
 
@@ -398,8 +426,8 @@ namespace GAPlatform
                 for (int i = 0; i < 3; i++)
                 {
                     //if a randomly selected tour is better than the current winner, replace the current winner
-                    index = Rand.rnd.Next(0, generation.Count);
-                    while (used.Contains(index)) { index = Rand.rnd.Next(0, generation.Count); }
+                    index = Rand.Next(0, generation.Count);
+                    while (used.Contains(index)) { index = Rand.Next(0, generation.Count); }
                     used.Add(index);
 
                     if (generation[index].fitness > winner.fitness)
@@ -458,7 +486,7 @@ namespace GAPlatform
             while (parents.Count < 2)
             {
                 //choose a random number between 0 and 1
-                double roll = Rand.rnd.NextDouble();
+                double roll = Rand.NextDouble();
 
                 //add the corresponding tour based on its probability
                 for (int k = 0; k < SortedGeneration.Count; k++)
@@ -505,7 +533,7 @@ namespace GAPlatform
             while (parents.Count < 2)
             {
                 //select a random number
-                double roll = Rand.rnd.NextDouble();
+                double roll = Rand.NextDouble();
                 for (int k = 0; k < generation.Count; k++)
                 {
                     //add the selected parent to the parent list
@@ -530,7 +558,7 @@ namespace GAPlatform
         public List<Tour> Crossover(List<Tour> Parents)
         {
             //randomly choose a crossover method based on the users input
-            string method = Operators.CrossoverMethods[Rand.rnd.Next(0, Operators.CrossoverMethods.Count)];
+            string method = Operators.CrossoverMethods[Rand.Next(0, Operators.CrossoverMethods.Count)];
 
             //choose the correct method of crossover
             switch (method)
@@ -571,7 +599,7 @@ namespace GAPlatform
                 List<int> orderedDigits = new List<int>();
 
                 //randomly determine the amount of digits to be swapped
-                int amountSwapped = Rand.rnd.Next(2, Parents[0].sites.Count());
+                int amountSwapped = Rand.Next(2, Parents[0].sites.Count());
 
                 //for each swapped digit
                 for (int j = 0; j < amountSwapped; j++)
@@ -580,7 +608,7 @@ namespace GAPlatform
                     int digit;
                     do
                     {
-                        digit = Rand.rnd.Next(0, Parents[0].sites.Count());
+                        digit = Rand.Next(0, Parents[0].sites.Count());
                     } while (swapDigits.Contains(digit));
 
                     swapDigits.Add(digit);
@@ -620,8 +648,8 @@ namespace GAPlatform
             if (Parents == null) { return null; }
 
             //randomly determine start and end indexes of swapped portion
-            int startIndex = Rand.rnd.Next(0, Parents[0].sites.Count() / 2);
-            int endIndex = Rand.rnd.Next(startIndex + 1, Parents[0].sites.Count());
+            int startIndex = Rand.Next(0, Parents[0].sites.Count() / 2);
+            int endIndex = Rand.Next(startIndex + 1, Parents[0].sites.Count());
 
             List<Tour> Children = new List<Tour>();
 
@@ -689,8 +717,8 @@ namespace GAPlatform
             List<Tour> Children = new List<Tour> { new Tour { sites = new List<int>(Parents[0].sites) }, new Tour { sites = new List<int>(Parents[1].sites) } };
 
             //randomly determine start and end indexes of swapped portion
-            int startIndex = Rand.rnd.Next(0, Parents[0].sites.Count() / 2);
-            int endIndex = Rand.rnd.Next(startIndex + 1, Parents[0].sites.Count());
+            int startIndex = Rand.Next(0, Parents[0].sites.Count() / 2);
+            int endIndex = Rand.Next(startIndex + 1, Parents[0].sites.Count());
 
             //extract swapped portions
             List<int> Sublist1 = Parents[0].sites.GetRange(startIndex, endIndex - startIndex);
@@ -818,8 +846,8 @@ namespace GAPlatform
             Children.Add(new Tour());
 
             //randomly determine the positions of the swapped sections in the tour. The start position will be in the first half to help ensure an adequate length
-            int startIndex = Rand.rnd.Next(0, Parents[0].sites.Count() / 2);
-            int endIndex = Rand.rnd.Next(startIndex + 1, Parents[0].sites.Count());
+            int startIndex = Rand.Next(0, Parents[0].sites.Count() / 2);
+            int endIndex = Rand.Next(startIndex + 1, Parents[0].sites.Count());
 
             List<List<int>> Sublists = new List<List<int>>
             {
@@ -921,13 +949,13 @@ namespace GAPlatform
             }
 
             //randomly determine the number of positions to be preserved
-            int PositionNum = Rand.rnd.Next(0, Parents[0].sites.Count());
+            int PositionNum = Rand.Next(0, Parents[0].sites.Count());
 
             //create a list of randomly selected positions
             List<int> Positions = new List<int>();
             while (Positions.Count != PositionNum)
             {
-                int position = Rand.rnd.Next(0, Parents[0].sites.Count());
+                int position = Rand.Next(0, Parents[0].sites.Count());
                 if (!Positions.Contains(position)) Positions.Add(position);
             }
 
@@ -972,7 +1000,7 @@ namespace GAPlatform
                     }
 
                     //replace the -1 site with a randomly chosen site from the missing list - then remove site from the missing list
-                    int randtour = Rand.rnd.Next(0, missing.Count);
+                    int randtour = Rand.Next(0, missing.Count);
                     Children[i].sites[Children[i].sites.IndexOf(-1)] = missing[randtour];
                     missing.RemoveAt(randtour);
                 }
@@ -991,7 +1019,7 @@ namespace GAPlatform
         public Tour Mutation(Tour tour)
         {
             //choose a random method of mutation from the users selected methods
-            string method = Operators.MutationMethods[Rand.rnd.Next(0, Operators.MutationMethods.Count)];
+            string method = Operators.MutationMethods[Rand.Next(0, Operators.MutationMethods.Count)];
 
             Console.WriteLine(method);
 
@@ -1023,8 +1051,8 @@ namespace GAPlatform
             if (tour == null) { return null; }
 
             //initialise local variables
-            int startIndex = Rand.rnd.Next(0, tour.sites.Count / 2);
-            int endIndex = Rand.rnd.Next(startIndex + 1, tour.sites.Count);
+            int startIndex = Rand.Next(0, tour.sites.Count / 2);
+            int endIndex = Rand.Next(startIndex + 1, tour.sites.Count);
             Tour mutant = new Tour
             {
                 sites = new List<int>()
@@ -1063,8 +1091,8 @@ namespace GAPlatform
             if (tour == null) { return null; }
 
             //randomly determine the indexes of the sites to be swapped
-            int first = Rand.rnd.Next(0, tour.sites.Count - 1);
-            int second = Rand.rnd.Next(0, tour.sites.Count - 1);
+            int first = Rand.Next(0, tour.sites.Count - 1);
+            int second = Rand.Next(0, tour.sites.Count - 1);
 
             //swap the selected sites
             (tour.sites[second], tour.sites[first]) = (tour.sites[first], tour.sites[second]);
@@ -1086,13 +1114,13 @@ namespace GAPlatform
             for (int i = 0; i < tour.sites.Count; i++)
             {
                 //one in four chance for each city to be swapped
-                if (Rand.rnd.NextDouble() < 0.25)
+                if (Rand.NextDouble() < 0.25)
                 {
                     //randomly determine the indexes of the site to be swapped
-                    int swap = Rand.rnd.Next(0, tour.sites.Count - 1);
+                    int swap = Rand.Next(0, tour.sites.Count - 1);
 
                     //if the swapped site = 1 keep shuffling until it doesn't
-                    while (swap == i) swap = Rand.rnd.Next(0, tour.sites.Count - 1);
+                    while (swap == i) swap = Rand.Next(0, tour.sites.Count - 1);
 
                     //swap the selected sites
                     (tour.sites[i], tour.sites[swap]) = (tour.sites[swap], tour.sites[i]);
@@ -1111,7 +1139,7 @@ namespace GAPlatform
             if (tour == null) { return null; }
 
             //choose a random point in the tour
-            int point = Rand.rnd.Next(1, tour.sites.Count - 1);
+            int point = Rand.Next(1, tour.sites.Count - 1);
 
             //split the tour into two halves
             List<int> start = tour.sites.GetRange(0, point);

@@ -31,7 +31,7 @@ namespace GAUnitTests
                         Site site = new Site();
                         site.X = Double.Parse(Coords[1]);
                         site.Y = Double.Parse(Coords[2]);
-                        ProblemData.Sitelist.Add(site);
+                        Operators.Sitelist.Add(site);
                     }
                 }
             }
@@ -96,7 +96,7 @@ namespace GAUnitTests
                         Site site = new Site();
                         site.X = Double.Parse(Coords[1]);
                         site.Y = Double.Parse(Coords[2]);
-                        ProblemData.Sitelist.Add(site);
+                        Operators.Sitelist.Add(site);
                     }
                 }
             }
@@ -134,7 +134,7 @@ namespace GAUnitTests
 
             //average of selected method tours should be greater than average of random tours
             double sum = 0;
-            GAApplication.FitnessCheck(comparison);
+            GAApplication.FitnessCheck(comparison, null);
 
             foreach (Tour T in result)
             {
@@ -187,7 +187,7 @@ namespace GAUnitTests
                         Site site = new Site();
                         site.X = Double.Parse(Coords[1]);
                         site.Y = Double.Parse(Coords[2]);
-                        ProblemData.Sitelist.Add(site);
+                        Operators.Sitelist.Add(site);
                     }
                 }
             }
@@ -323,14 +323,14 @@ namespace GAUnitTests
                         Site site = new Site();
                         site.X = Double.Parse(Coords[1]);
                         site.Y = Double.Parse(Coords[2]);
-                        ProblemData.Sitelist.Add(site);
+                        Operators.Sitelist.Add(site);
                     }
                 }
             }
 
 
             //ACT
-            GAApplication.FitnessCheck(list);
+            GAApplication.FitnessCheck(list, null);
 
             //ASSERT
             Assert.AreEqual(list[0].fitness, 0.023719202860804461);
@@ -343,7 +343,7 @@ namespace GAUnitTests
             GAApplication GAApplication = new GAApplication();
 
             //ACT
-            GAApplication.FitnessCheck(null);
+            GAApplication.FitnessCheck(null, null);
 
             //ASSERT
             Assert.IsTrue(true);
@@ -411,13 +411,13 @@ namespace GAUnitTests
                         Site site = new Site();
                         site.X = Double.Parse(Coords[1]);
                         site.Y = Double.Parse(Coords[2]);
-                        ProblemData.Sitelist.Add(site);
+                        Operators.Sitelist.Add(site);
                     }
                 }
             }
 
             List<Tour> Generation = initialisation.RandomInitialisation(50);
-            application.FitnessCheck(Generation);
+            application.FitnessCheck(Generation, null);
             List<Tour> selected = new List<Tour>();
 
             //find the average fitness of the randomly generated generation
@@ -487,13 +487,13 @@ namespace GAUnitTests
                         Site site = new Site();
                         site.X = Double.Parse(Coords[1]);
                         site.Y = Double.Parse(Coords[2]);
-                        ProblemData.Sitelist.Add(site);
+                        Operators.Sitelist.Add(site);
                     }
                 }
             }
 
             List<Tour> Generation = initialisation.RandomInitialisation(50);
-            application.FitnessCheck(Generation);
+            application.FitnessCheck(Generation, null);
             List<Tour> selected = new List<Tour>();
 
             //find the average fitness of the randomly generated generation
@@ -719,7 +719,7 @@ namespace GAUnitTests
                         Site site = new Site();
                         site.X = Double.Parse(Coords[1]);
                         site.Y = Double.Parse(Coords[2]);
-                        ProblemData.Sitelist.Add(site);
+                        Operators.Sitelist.Add(site);
                     }
                 }
             }

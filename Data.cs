@@ -16,13 +16,13 @@ namespace GAPlatform
         public static List<String> SelectionMethods = new List<string>();
         public static List<String> CrossoverMethods = new List<string>();
         public static List<String> MutationMethods = new List<string>();
+        public static List<Site> Sitelist = new List<Site>();
     }
 
-    public static class ProblemData
+    public class ProblemData
     {
-        public static List<Site> Sitelist = new List<Site>();
-        public static Tour bestFit = new Tour();
-        public static Tour genFit = new Tour();
+        public Tour bestFit = new Tour();
+        public Tour genFit = new Tour();
     }
 
     public class Site

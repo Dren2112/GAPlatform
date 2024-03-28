@@ -52,7 +52,7 @@ namespace GAPlatform
                         Site site = new Site();
                         site.X = Double.Parse(Coords[1]);
                         site.Y = Double.Parse(Coords[2]);
-                        ProblemData.Sitelist.Add(site);
+                        Operators.Sitelist.Add(site);
                     }
                 }
             }
@@ -132,9 +132,34 @@ namespace GAPlatform
                 Operators.MutationMethods.Add((string)MutationCheck.CheckedItems[i]);
             }
 
-            //build and run the main genetic algorithm thread
-            Thread thread = new Thread(() => GAApplication.GeneticAlgorithm(this));
-            thread.Start();
+            List<double> results = new List<double>();
+            Parallel.For(0, 30,
+                index => {results.Add(GAApplication.GeneticAlgorithm(this)); }
+                );
+
+            List<string> Data = results.Select(x => x.ToString()).ToList();
+
+            List<string> Lines;
+
+            if (File.Exists(@"Output.csv"))
+            {
+                Lines = File.ReadAllLines(@"Output.csv").ToList();
+            }else
+            {
+                Lines = new List<string>();
+                foreach(string s in Data)
+                {
+                    Lines.Add("");
+                }
+            }
+            
+
+            for (int i = 0; i < Data.Count(); i++)
+            {
+                Lines[i] += "," + Data[i];
+            }
+
+            File.WriteAllLines(@"Output.csv", Lines);
         }
 
         /// <summary>
@@ -147,7 +172,7 @@ namespace GAPlatform
             {
                 Invoke(new Action(() =>
                     {
-                        Output.Text = "Best Overall Fitness: " + ProblemData.bestFit.fitness.ToString() + '\n' + "Best fitness of generation " + gen.ToString() + ":" + ProblemData.genFit.fitness.ToString();
+                        //Output.Text = "Best Overall Fitness: " + ProblemData.bestFit.fitness.ToString() + '\n' + "Best fitness of generation " + gen.ToString() + ":" + ProblemData.genFit.fitness.ToString();
                     }
                     ));
             }
@@ -155,7 +180,7 @@ namespace GAPlatform
             {
 
             }
-            DrawTour();
+            //DrawTour();
         }
 
        
@@ -179,7 +204,7 @@ namespace GAPlatform
         {
             float maxX = 0;
             float maxY = 0;
-            foreach(Site s in ProblemData.Sitelist)
+            foreach(Site s in Operators.Sitelist)
             {
                 if (s.X > maxX) maxX = (float)s.X;
                 if (s.Y > maxY) maxY = (float)s.Y;
@@ -196,7 +221,7 @@ namespace GAPlatform
             var (xScale, yScale) = Scale();
 
             Tour Drawn = new Tour();
-            Drawn.sites = ProblemData.genFit.sites;
+            //Drawn.sites = ProblemData.genFit.sites;
 
             Drawn.sites.Add(Drawn.sites[0]);
 
@@ -207,7 +232,7 @@ namespace GAPlatform
 
             for (int i = 0; i < Drawn.sites.Count; i++)
             {
-                PointF point = new PointF((float)ProblemData.Sitelist[Drawn.sites[i]].X / xScale, (float)ProblemData.Sitelist[Drawn.sites[i]].Y / yScale);
+                PointF point = new PointF((float)Operators.Sitelist[Drawn.sites[i]].X / xScale, (float)Operators.Sitelist[Drawn.sites[i]].Y / yScale);
                 points[i] = point;
             }
 
