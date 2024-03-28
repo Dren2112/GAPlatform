@@ -65,6 +65,19 @@ namespace GAUnitTests
         }
 
         [TestMethod]
+        public void RandomZero()
+        {
+            //ARRANGE
+            GAInitialisation initialisation = new GAInitialisation();
+
+            //ACT
+            List<Tour> result = initialisation.RandomInitialisation(0);
+
+            //ASSERT
+            Assert.AreEqual(0, result.Count());
+        }
+
+        [TestMethod]
         public void Sorted()
         {
             //ARRANGE
@@ -90,12 +103,14 @@ namespace GAUnitTests
 
             //initialise other required variables
             Operators.genSize = 50;
+            GAApplication GAApplication = new GAApplication();
             GAInitialisation initialisation = new GAInitialisation();
             Random rnd = new Random();
 
 
             //ACT
             List<Tour> result = initialisation.SortedInitialisation();
+            List<Tour> comparison = initialisation.RandomInitialisation(50);
 
             //ASSERT
             //method should return 50 tours
@@ -117,6 +132,39 @@ namespace GAUnitTests
                 Assert.IsFalse(result[first].sites.SequenceEqual(result[second].sites));
             }
 
+            //average of selected method tours should be greater than average of random tours
+            double sum = 0;
+            GAApplication.FitnessCheck(comparison);
+
+            foreach (Tour T in result)
+            {
+                sum += T.fitness;
+            }
+            double sortedFit = sum / 50;
+            sum = 0;
+
+            foreach(Tour T in comparison)
+            {
+                sum += T.fitness;
+            }
+
+            double comparisonFit = sum / 50;
+
+            Assert.IsTrue(comparisonFit < sortedFit);
+
+        }
+
+        [TestMethod]
+        public void SortedNull()
+        {
+            //ARRANGE
+            GAInitialisation initialisation = new GAInitialisation();
+
+            //ACT
+            List<Tour> result = initialisation.SortedInitialisation();
+
+            //ASSERT
+            Assert.AreEqual(0, result.Count());
         }
 
         [TestMethod]
@@ -161,9 +209,21 @@ namespace GAUnitTests
                     break;
                 }
 
-                Thread.Sleep(10);
                 Assert.AreEqual(tour.sites.Count(), tour.sites.Distinct().Count());
             }
+        }
+
+        [TestMethod]
+        public void NNNull()
+        {
+            //ARRANGE
+            GAInitialisation initialisation = new GAInitialisation();
+
+            //ACT
+            List<Tour> result = initialisation.NNInitialisation();
+
+            //ASSERT
+            Assert.AreEqual(0, result.Count());
         }
     }
 
@@ -194,6 +254,19 @@ namespace GAUnitTests
         }
 
         [TestMethod]
+        public void LeastFitNull()
+        {
+            //ARRANGE
+            GAApplication GAApplication = new GAApplication();
+
+            //ACT
+            Tour result = GAApplication.LeastFit(null);
+
+            //ASSERT
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
         public void Distance()
         {
             //ARRANGE
@@ -213,6 +286,19 @@ namespace GAUnitTests
 
             //ASSERT
             Assert.AreEqual(result, 5);
+        }
+
+        [TestMethod]
+        public void DistanceNull()
+        {
+            //ARRANGE
+            GAApplication GAApplication = new GAApplication();
+
+            //ACT
+            double result = GAApplication.Distance(null, null);
+
+            //ASSERT
+            Assert.AreEqual(double.MaxValue, result);
         }
 
         [TestMethod]
@@ -249,6 +335,19 @@ namespace GAUnitTests
             //ASSERT
             Assert.AreEqual(list[0].fitness, 0.023719202860804461);
         }
+
+        [TestMethod]
+        public void FitnessNull()
+        {
+            //ARRANGE
+            GAApplication GAApplication = new GAApplication();
+
+            //ACT
+            GAApplication.FitnessCheck(null);
+
+            //ASSERT
+            Assert.IsTrue(true);
+        }
     }
 
     [TestClass]
@@ -274,6 +373,19 @@ namespace GAUnitTests
             //ASSERT
             Assert.IsTrue(result[0].fitness >= 4);
             Assert.IsTrue(result[1].fitness >= 4);
+        }
+
+        [TestMethod]
+        public void TournamentNull()
+        {
+            //ARRANGE
+            GASelection selection = new GASelection();
+
+            //ACT
+            List<Tour> result = selection.TournamentSelection(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
         }
 
         [TestMethod]
@@ -340,6 +452,19 @@ namespace GAUnitTests
         }
 
         [TestMethod]
+        public void RouletteNull()
+        {
+            //ARRANGE
+            GASelection selection = new GASelection();
+
+            //ACT
+            List<Tour> result = selection.RouletteSelection(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
+        }
+
+        [TestMethod]
         public void Ranked()
         {
             //ARRANGE
@@ -402,6 +527,19 @@ namespace GAUnitTests
             //ASSERT
             Assert.IsTrue(selectedAverage > generationAverage);
         }
+
+        [TestMethod]
+        public void RankedNull()
+        {
+            //ARRANGE
+            GASelection selection = new GASelection();
+
+            //ACT
+            List<Tour> result = selection.RankedSelection(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
+        }
     }
 
     [TestClass]
@@ -453,6 +591,19 @@ namespace GAUnitTests
 
             //ensure all digits match
             Assert.AreEqual(10, FirstMatch + SecondMatch);
+        }
+
+        [TestMethod]
+        public void OrderBasedNull()
+        {
+            //ARRANGE
+            GACrossover Crossover = new GACrossover();
+
+            //ACT
+            List<Tour> result = Crossover.OrderBasedCrossover(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
         }
 
         [TestMethod]
@@ -523,7 +674,20 @@ namespace GAUnitTests
         }
 
         [TestMethod]
-        public void GeneRepiar()
+        public void OrderedNull()
+        {
+            //ARRANGE
+            GACrossover Crossover = new GACrossover();
+
+            //ACT
+            List<Tour> result = Crossover.OrderedCrossover(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
+        }
+
+        [TestMethod]
+        public void GeneRepair()
         {
             //ARRANGE
             Tour Parent1 = new Tour
@@ -573,6 +737,19 @@ namespace GAUnitTests
         }
 
         [TestMethod]
+        public void GeneRepairNull()
+        {
+            //ARRANGE
+            GACrossover Crossover = new GACrossover();
+
+            //ACT
+            List<Tour> result = Crossover.GeneRepairCrossover(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
+        }
+
+        [TestMethod]
         public void Cycle()
         {
             //ARRANGE
@@ -595,6 +772,19 @@ namespace GAUnitTests
 
             //ASSERT
             Assert.IsTrue(result[0].sites.SequenceEqual(new List<int> {9,1,7,3,5,4,6,2,8,0}));
+        }
+
+        [TestMethod]
+        public void CycleNull()
+        {
+            //ARRANGE
+            GACrossover Crossover = new GACrossover();
+
+            //ACT
+            List<Tour> result = Crossover.CycleCrossover(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
         }
 
         [TestMethod]
@@ -628,6 +818,21 @@ namespace GAUnitTests
         }
 
         [TestMethod]
+        public void PartiallyMappedNull()
+        {
+            //ARRANGE
+            GACrossover Crossover = new GACrossover();
+
+            //ACT
+            List<Tour> result = Crossover.PMCrossover(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
+        }
+
+
+
+        [TestMethod]
         public void PositionBased()
         {
             //ARRANGE
@@ -655,6 +860,19 @@ namespace GAUnitTests
 
             Assert.IsTrue(!result[0].sites.SequenceEqual(Parent1.sites) || !result[1].sites.SequenceEqual(Parent2.sites));
 
+        }
+
+        [TestMethod]
+        public void PositionBasedNull()
+        {
+            //ARRANGE
+            GACrossover Crossover = new GACrossover();
+
+            //ACT
+            List<Tour> result = Crossover.PositionBasedCrossover(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
         }
     }
 
@@ -691,6 +909,19 @@ namespace GAUnitTests
         }
 
         [TestMethod]
+        public void ReverseNull()
+        {
+            //ARRANGE
+            GAMutation mutation = new GAMutation(); ;
+
+            //ACT
+            Tour result = mutation.ReverseSequenceMutation(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
+        }
+
+        [TestMethod]
         public void Swap()
         {
             //ARRANGE
@@ -722,6 +953,19 @@ namespace GAUnitTests
         }
 
         [TestMethod]
+        public void SwapNull()
+        {
+            //ARRANGE
+            GAMutation mutation = new GAMutation(); ;
+
+            //ACT
+            Tour result = mutation.SwapMutation(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
+        }
+
+        [TestMethod]
         public void PartialShuffle()
         {
             //ARRANGE
@@ -736,6 +980,19 @@ namespace GAUnitTests
             //ensure the tour is different and still valid
             Assert.IsFalse(result.sites.SequenceEqual(new List<int> { 0,1,2,3,4,5,6,7,8,9}));
             Assert.AreEqual(result.sites.Count(), result.sites.Distinct().Count());
+        }
+
+        [TestMethod]
+        public void PartialShuffleNull()
+        {
+            //ARRANGE
+            GAMutation mutation = new GAMutation(); ;
+
+            //ACT
+            Tour result = mutation.PartialShuffleMutation(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
         }
 
         [TestMethod]
@@ -763,6 +1020,19 @@ namespace GAUnitTests
                 }
             }
             Assert.AreEqual(result.sites.Count(), result.sites.Distinct().Count());
+        }
+
+        [TestMethod]
+        public void CentreInverseNull()
+        {
+            //ARRANGE
+            GAMutation mutation = new GAMutation(); ;
+
+            //ACT
+            Tour result = mutation.CentreInverseMutation(null);
+
+            //ASSERT
+            Assert.AreEqual(null, result);
         }
     }
 }

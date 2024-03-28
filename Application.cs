@@ -110,6 +110,9 @@ namespace GAPlatform
         /// <returns>the distance between the two sites</returns>
         public double Distance(Site first, Site second)
         {
+            //if given null return max value so tour with null should not be selected and therefore not pass on to another generation
+            if (first == null || second == null) return double.MaxValue;
+
             //find the lengths of the horizontal axes between the sites
             double Xdistance = Math.Abs(first.X - second.X);
             double ydistance = Math.Abs(first.Y - second.Y);
@@ -127,6 +130,8 @@ namespace GAPlatform
         /// <param name="generation">the generation of tours to be analysed</param>
         public void FitnessCheck(List<Tour> generation)
         {
+            if (generation == null || generation.Count == 0) return;
+
 
             //repeat for each tour in the generation
             for (int j = 0; j < generation.Count; j++)
@@ -171,6 +176,8 @@ namespace GAPlatform
         /// <returns>the least fit member of the generation</returns>
         public Tour LeastFit(List<Tour> generation)
         {
+            if (generation == null) { return null; }
+
             //initialise return variable
             Tour worst = generation[0];
 
@@ -266,38 +273,9 @@ namespace GAPlatform
         {
             //initialise local variables
             int cityNumber;
-            List<Tour> generation = new List<Tour>();
 
             //create twice as many tours as required
-            for (int i = 0; i < Operators.genSize * 2; i++)
-            {
-                cityNumber = ProblemData.Sitelist.Count;
-
-                Tour tour = new Tour
-                {
-                    sites = new List<int>()
-                };
-
-                //populate the tour with every site
-                for (int j = 0; j < cityNumber; j++)
-                {
-                    tour.sites.Add(j);
-                }
-
-                //shuffle the tour
-                while (cityNumber > 1)
-                {
-                    //decrement the number of unswapped cities
-                    cityNumber--;
-                    int k = Rand.rnd.Next(cityNumber + 1);
-
-                    //swap the last unswapped city with a randomly picked city
-                    (tour.sites[cityNumber], tour.sites[k]) = (tour.sites[k], tour.sites[cityNumber]);
-                }
-
-                //add the tour to the generation
-                generation.Add(tour);
-            }
+            List<Tour> generation = RandomInitialisation(Operators.genSize * 2);
 
             //evaluate the fitness of the generation
             GA.FitnessCheck(generation);
@@ -396,6 +374,8 @@ namespace GAPlatform
         /// <returns>the selected parents</returns>
         public List<Tour> TournamentSelection(List<Tour> generation)
         {
+            if (generation == null) { return null; }
+
             //initialise parents variable
             List<Tour> parents = new List<Tour>();
 
@@ -443,6 +423,8 @@ namespace GAPlatform
         /// <returns>the selected parents</returns>
         public List<Tour> RankedSelection(List<Tour> generation)
         {
+            if (generation == null) { return null; }
+
             //initilise local variables
             List<Tour> SortedGeneration = new List<Tour>();
             List<Tour> GenCopy = new List<Tour>(generation);
@@ -498,6 +480,8 @@ namespace GAPlatform
         /// <returns>the selected parents</returns>
         public List<Tour> RouletteSelection(List<Tour> generation)
         {
+            if (generation == null) { return null; }
+
             //initialise local variables
             double sum = 0;
             double[] Probablities = new double[generation.Count + 1];
@@ -576,7 +560,7 @@ namespace GAPlatform
         /// <returns>two children solutions</returns>
         public List<Tour> OrderBasedCrossover(List<Tour> Parents)
         {
-
+            if (Parents == null) { return null; }
             List<Tour> Children = new List<Tour> {new Tour { sites = new List<int>(Parents[0].sites) }, new Tour { sites = new List<int>(Parents[1].sites) } };
 
 
@@ -633,6 +617,8 @@ namespace GAPlatform
         /// <returns>two children produced by the crossover</returns>
         public List<Tour> OrderedCrossover(List<Tour> Parents)
         {
+            if (Parents == null) { return null; }
+
             //randomly determine start and end indexes of swapped portion
             int startIndex = Rand.rnd.Next(0, Parents[0].sites.Count() / 2);
             int endIndex = Rand.rnd.Next(startIndex + 1, Parents[0].sites.Count());
@@ -695,6 +681,8 @@ namespace GAPlatform
         /// <returns>two child tours</returns>
         public List<Tour> GeneRepairCrossover(List<Tour> Parents)
         {
+            if (Parents == null) { return null; }
+
             GAInitialisation I = new GAInitialisation();
 
             //initilise list of children
@@ -758,6 +746,8 @@ namespace GAPlatform
         /// <returns>two child tours</returns>
         public List<Tour> CycleCrossover(List<Tour> Parents)
         {
+            if (Parents == null) { return null; }
+
             //initialise child tours
             List<Tour> Children = new List<Tour>();
             for (int i = 0; i < 2; i++)
@@ -819,6 +809,8 @@ namespace GAPlatform
         /// <returns>list of two child tours</returns>
         public List<Tour> PMCrossover(List<Tour> Parents)
         {
+
+            if (Parents == null) { return null; }
 
             //initialise child tours
             List<Tour> Children = new List<Tour>();
@@ -909,6 +901,8 @@ namespace GAPlatform
         /// <returns>the child tours</returns>
         public List<Tour> PositionBasedCrossover(List<Tour> Parents)
         {
+            if (Parents == null) { return null; }
+
             //initialise child tour list
             List<Tour> Children = new List<Tour>();
             for (int i = 0; i < 2; i++)
@@ -1026,6 +1020,8 @@ namespace GAPlatform
         /// <returns>the mutated tour</returns>
         public Tour ReverseSequenceMutation(Tour tour)
         {
+            if (tour == null) { return null; }
+
             //initialise local variables
             int startIndex = Rand.rnd.Next(0, tour.sites.Count / 2);
             int endIndex = Rand.rnd.Next(startIndex + 1, tour.sites.Count);
@@ -1064,6 +1060,8 @@ namespace GAPlatform
         /// <returns>the mutated tour</returns>
         public Tour SwapMutation(Tour tour)
         {
+            if (tour == null) { return null; }
+
             //randomly determine the indexes of the sites to be swapped
             int first = Rand.rnd.Next(0, tour.sites.Count - 1);
             int second = Rand.rnd.Next(0, tour.sites.Count - 1);
@@ -1082,6 +1080,8 @@ namespace GAPlatform
         /// <returns>the mutated tour</returns>
         public Tour PartialShuffleMutation(Tour tour)
         {
+            if (tour == null) { return null; }
+
             //for each site in teh tour
             for (int i = 0; i < tour.sites.Count; i++)
             {
@@ -1108,6 +1108,8 @@ namespace GAPlatform
         /// <returns>the mutated tour</returns>
         public Tour CentreInverseMutation(Tour tour)
         {
+            if (tour == null) { return null; }
+
             //choose a random point in the tour
             int point = Rand.rnd.Next(1, tour.sites.Count - 1);
 
