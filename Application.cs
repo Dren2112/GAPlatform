@@ -464,8 +464,20 @@ namespace GAPlatform
             //sort the generation from least fit to best
             while (GenCopy.Count > 0)
             {
-                SortedGeneration.Add(GA.LeastFit(GenCopy));
-                GenCopy.RemoveAt(GenCopy.IndexOf(GA.LeastFit(GenCopy)));
+                SortedGeneration.Add(GenCopy.First());
+                for(int i = 1; i < GenCopy.Count; i++)
+                {
+                    for(int j = 0; j < SortedGeneration.Count; j++)
+                    {
+                        if (GenCopy[i].fitness < SortedGeneration[j].fitness)
+                        {
+                            SortedGeneration.Insert(j, GenCopy[i]);
+                        }else if(j == SortedGeneration.Count - 1)
+                        {
+                            SortedGeneration.Add(GenCopy[i]);
+                        }
+                    }
+                }
             }
 
             //replace fitness with rank then add all fitnesses together

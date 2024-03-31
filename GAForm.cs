@@ -160,6 +160,8 @@ namespace GAPlatform
             }
 
             File.WriteAllLines(@"Output.csv", Lines);
+
+            Environment.Exit(0);
         }
 
         /// <summary>

@@ -259,7 +259,7 @@
             this.Controls.Add(this.Output);
             this.Controls.Add(this.button2);
             this.Name = "GAForm";
-            this.Text = "Form1";
+            this.Text = "G";
             ((System.ComponentModel.ISupportInitialize)(this.DrawOutput)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
