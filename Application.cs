@@ -434,10 +434,27 @@ namespace GAPlatform
             double probSum = 0;
 
             //sort the generation from least fit to best
+            SortedGeneration.Add(GenCopy.First());
+            GenCopy.RemoveAt(0);
             while (GenCopy.Count > 0)
             {
-                SortedGeneration.Add(GA.LeastFit(GenCopy));
-                GenCopy.RemoveAt(GenCopy.IndexOf(GA.LeastFit(GenCopy)));
+                for (int j = 0; j < SortedGeneration.Count; j++)
+                {
+                    if (GenCopy[0].fitness < SortedGeneration[j].fitness)
+                    {
+                        SortedGeneration.Insert(j, GenCopy[0]);
+                        GenCopy.RemoveAt(0);
+                        break;
+                            
+                    }
+                    else if (j == SortedGeneration.Count - 1)
+                    {
+                        SortedGeneration.Add(GenCopy[0]);
+                        GenCopy.RemoveAt(0);
+                        break;
+                    }
+                }
+                
             }
 
             //replace fitness with rank then add all fitnesses together
@@ -992,8 +1009,6 @@ namespace GAPlatform
         {
             //choose a random method of mutation from the users selected methods
             string method = Operators.MutationMethods[Rand.rnd.Next(0, Operators.MutationMethods.Count)];
-
-            Console.WriteLine(method);
 
             //choose the correct method of mutation based on the users choice
             switch (method)
