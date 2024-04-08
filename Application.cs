@@ -462,22 +462,27 @@ namespace GAPlatform
             double probSum = 0;
 
             //sort the generation from least fit to best
+            SortedGeneration.Add(GenCopy.First());
+            GenCopy.RemoveAt(0);
             while (GenCopy.Count > 0)
             {
-                SortedGeneration.Add(GenCopy.First());
-                for(int i = 1; i < GenCopy.Count; i++)
+                for (int j = 0; j < SortedGeneration.Count; j++)
                 {
-                    for(int j = 0; j < SortedGeneration.Count; j++)
+                    if (GenCopy[0].fitness < SortedGeneration[j].fitness)
                     {
-                        if (GenCopy[i].fitness < SortedGeneration[j].fitness)
-                        {
-                            SortedGeneration.Insert(j, GenCopy[i]);
-                        }else if(j == SortedGeneration.Count - 1)
-                        {
-                            SortedGeneration.Add(GenCopy[i]);
-                        }
+                        SortedGeneration.Insert(j, GenCopy[0]);
+                        GenCopy.RemoveAt(0);
+                        break;
+
+                    }
+                    else if (j == SortedGeneration.Count - 1)
+                    {
+                        SortedGeneration.Add(GenCopy[0]);
+                        GenCopy.RemoveAt(0);
+                        break;
                     }
                 }
+
             }
 
             //replace fitness with rank then add all fitnesses together
